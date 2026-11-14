@@ -98,11 +98,12 @@ class FishingGameView(context: Context) : View(context) {
     private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif", Typeface.BOLD) }
     private val locations = FishingCatalog.locations
     private val baits = FishingCatalog.baits
+
     private val frameTask = object : Runnable {
         override fun run() { invalidate(); handler.postDelayed(this, 33) }
+    }
 
     init {
-        
         isFocusable = true
         winterEventBanner = runCatching { android.graphics.BitmapFactory.decodeResource(resources, ru.reborn.fishing.R.drawable.winter_event_banner) }.getOrNull()
         val savedDay = prefs.getLong("daily_day", -1L)
@@ -117,7 +118,6 @@ class FishingGameView(context: Context) : View(context) {
         dailyVisited = (prefs.getStringSet("daily_visited", emptySet()) ?: emptySet()).toMutableSet()
         handler.post(frameTask)
     }
-   
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -1184,18 +1184,17 @@ class FishingGameView(context: Context) : View(context) {
     }
 
     private fun drawDailyQuests(c: Canvas) {
-    data class DailyTask(
-        val title: String,
-        val description: String,
-        val progress: Int,
-        val target: Int
-    )
+        data class DailyTask(
+            val title: String,
+            val description: String,
+            val progress: Int,
+            val target: Int
+        )
 
-    val tasks = listOf(
-        DailyTask("Удачный день", "Поймать 3 рыбы", dailyCatches, 3),
-        DailyTask("На рынке", "Продать 2 рыбы", dailySales, 2),
-        DailyTask("Путешествие", "Посетить 2 водоёма", dailyVisited.size, 2)
-    )
+        val tasks = listOf(
+            DailyTask("Удачный день", "Поймать 3 рыбы", dailyCatches, 3),
+            DailyTask("На рынке", "Продать 2 рыбы", dailySales, 2),
+            DailyTask("Путешествие", "Посетить 2 водоёма", dailyVisited.size, 2)
         )
         val keys = listOf("daily_claim_catch", "daily_claim_sale", "daily_claim_visit")
         val rewards = listOf(35, 45, 40)
@@ -1205,13 +1204,13 @@ class FishingGameView(context: Context) : View(context) {
         drawText(c, "Обновление при смене календарного дня", 28f, 176f, 10f, Color.LTGRAY)
         tasks.forEachIndexed { i, task ->
             val y = 190f + i * 105f
-            val complete = task.third >= task.fourth
+            val complete = task.progress >= task.target
             val claimed = prefs.getBoolean(keys[i], false)
             p.color = if (claimed) Color.rgb(38, 54, 45) else if (complete) Color.rgb(58, 86, 49) else Color.rgb(37, 48, 46)
             c.drawRoundRect(24f, y, 396f, y + 88f, 8f, 8f, p)
-            drawText(c, task.first, 38f, y + 24f, 14f, Color.WHITE)
-            drawText(c, task.second, 38f, y + 47f, 12f, Color.LTGRAY)
-            drawText(c, "${task.third.coerceAtMost(task.fourth)} / ${task.fourth}   •   +${rewards[i]} монет", 38f, y + 70f, 11f, Color.rgb(255, 220, 150))
+            drawText(c, task.title, 38f, y + 24f, 14f, Color.WHITE)
+            drawText(c, task.description, 38f, y + 47f, 12f, Color.LTGRAY)
+            drawText(c, "${task.progress.coerceAtMost(task.target)} / ${task.target}   •   +${rewards[i]} монет", 38f, y + 70f, 11f, Color.rgb(255, 220, 150))
             drawText(c, if (claimed) "ПОЛУЧЕНО" else if (complete) "ЗАБРАТЬ" else "В ПРОЦЕССЕ", 300f, y + 24f, 10f, if (claimed) Color.LTGRAY else Color.rgb(255, 220, 150))
         }
         button(c, 145f, 665f, 130f, 48f, "НАЗАД", false)
