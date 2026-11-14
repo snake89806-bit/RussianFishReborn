@@ -98,8 +98,11 @@ class FishingGameView(context: Context) : View(context) {
     private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif", Typeface.BOLD) }
     private val locations = FishingCatalog.locations
     private val baits = FishingCatalog.baits
+    private val frameTask = object : Runnable {
+        override fun run() { invalidate(); handler.postDelayed(this, 33) }
 
     init {
+        
         isFocusable = true
         winterEventBanner = runCatching { android.graphics.BitmapFactory.decodeResource(resources, ru.reborn.fishing.R.drawable.winter_event_banner) }.getOrNull()
         val savedDay = prefs.getLong("daily_day", -1L)
@@ -114,9 +117,7 @@ class FishingGameView(context: Context) : View(context) {
         dailyVisited = (prefs.getStringSet("daily_visited", emptySet()) ?: emptySet()).toMutableSet()
         handler.post(frameTask)
     }
-    private val frameTask = object : Runnable {
-        override fun run() { invalidate(); handler.postDelayed(this, 33) }
-    }
+   
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -1183,10 +1184,18 @@ class FishingGameView(context: Context) : View(context) {
     }
 
     private fun drawDailyQuests(c: Canvas) {
-        val tasks = listOf(
-            Triple("Удачный день", "Поймать 3 рыбы", dailyCatches, 3),
-            Triple("На рынке", "Продать 2 рыбы", dailySales, 2),
-            Triple("Путешествие", "Посетить 2 водоёма", dailyVisited.size, 2)
+    data class DailyTask(
+        val title: String,
+        val description: String,
+        val progress: Int,
+        val target: Int
+    )
+
+    val tasks = listOf(
+        DailyTask("Удачный день", "Поймать 3 рыбы", dailyCatches, 3),
+        DailyTask("На рынке", "Продать 2 рыбы", dailySales, 2),
+        DailyTask("Путешествие", "Посетить 2 водоёма", dailyVisited.size, 2)
+    )
         )
         val keys = listOf("daily_claim_catch", "daily_claim_sale", "daily_claim_visit")
         val rewards = listOf(35, 45, 40)
