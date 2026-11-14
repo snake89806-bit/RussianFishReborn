@@ -6,12 +6,22 @@ plugins {
 android {
     namespace = "ru.reborn.fishing"
     compileSdk = 35
+
     defaultConfig {
         applicationId = "ru.reborn.fishing"
         minSdk = 23
         targetSdk = 35
         versionCode = 28
         versionName = "0.28.0"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
